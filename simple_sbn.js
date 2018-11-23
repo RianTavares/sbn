@@ -1,10 +1,13 @@
-(function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-  typeof define === 'function' && define.amd ? define(factory) :
-  (global.sbn = factory());
-}(this, (function () { 'use strict';
+(function(global, factory) {
+  typeof exports === "object" && typeof module !== "undefined"
+    ? (module.exports = factory())
+    : typeof define === "function" && define.amd
+    ? define(factory)
+    : (global.sbn = factory());
+})(this, function() {
+  "use strict";
 
-/**
+  /**
   ## Lexical Analyzer
   Just like we can split English sentence "I have a pen" to [I, have, a, pen],
   lexical analyzer splits a code string into small meaningful chunks (tokens).
@@ -26,20 +29,66 @@
     \s : matches any whitespace character (equal to [\r\n\t\f\v ])
      + : match previous condition for one and unlimited times
 */
+  function lexer(code) {
+    let dbn_tokens = code
+      .split(/\s+/)
+      .filter(function(t) {
+        return t.length > 0;
+      })
+      .map(function(t) {
+        return isNaN(t)
+          ? { type: "word", value: t }
+          : { type: "number", value: t };
+      });
+    for (
+      let itokens = 0, end = dbn_tokens.length;
+      itokens < end;
+      itokens += 1
+    ) {
+      if (dbn_tokens[itokens].type === "word") {
+        if (
+          dbn_tokens[itokens].value === "Paper" ||
+          dbn_tokens[itokens].value === "Pen" ||
+          dbn_tokens[itokens].value === "Line" ||
+          dbn_tokens[itokens].value === "Square" ||
+          dbn_tokens[itokens].value === "Triangle"
+        ) {
+          // Ok;
+        } else {
+          throw "This word do not exists in DBN";
+        }
+      }
+    }
+    return dbn_tokens;
 
-function lexer (code) {
-  return code.split(/\s+/)
-          .filter(function (t) { return t.length > 0 })
-          .map(function (t) {
-            return isNaN(t)
-                    ? {type: 'word', value: t}
-                    : {type: 'number', value: t}
-          })
-}
+    // console.log(dbn_tokens);
+  }
 
-/**
+  // function lexer(code) {
+  //   code = code.split(/\s+/).filter(function(t){ return t.length > 0});
+  //   if (!isNaN(t)) {
+  //     var current_token = tokens.shift();
+  //     if (current_token.type === "word") {
+  //       switch (current_token.value) {
+  //         case "Paper":
+  //         case "Pen":
+  //         case "Line":
+  //         case "Square":
+  //           code = code.map({ type: "word", value: t });
+  //           break;
+
+  //         default:
+  //           throw "This word do not exists in DBN";
+  //       }
+  //     }
+  //   } else {
+  //     code = code.map({ type: "number", value: t });
+  //   }
+  //   return code;
+  // }
+  /**
   ## Parser (Syntactical Analyzer)
-  Parser go through each tokens, find syntactic information, and builds
+  Parser go th  rough each tokens, find syntactic information, and builds
   AST (Abstract Syntax Tree). You can think of it as a 🗺 for our code.
   In this language, there is 2 syntax type `NumberLiteral` and `CallExpression`.
 
@@ -78,94 +127,118 @@ function lexer (code) {
   ```
 */
 
-function parser (tokens) {
-  var AST = {
-    type: 'Drawing',
-    body: []
-  }
+  function parser(tokens) {
+    var AST = {
+      type: "Drawing",
+      body: []
+    };
 
-  // extract a token at a time as current_token. Loop until we are out of tokens.
-  while (tokens.length > 0){
-    var current_token = tokens.shift()
+    // extract a token at a time as current_token. Loop until we are out of tokens.
+    while (tokens.length > 0) {
+      var current_token = tokens.shift();
 
-    // Since number token does not do anything by it self,
-    // we only analyze syntax when we find a word.
-    if (current_token.type === 'word') {
-      switch (current_token.value) {
-        case 'Paper' :
-          var expression = {
-            type: 'CallExpression',
-            name: 'Paper',
-            arguments: []
-          }
-          // if current token is CallExpression of type Paper,
-          // next token should be color argument
-          var argument = tokens.shift()
-          if(argument.type === 'number') {
-            // add argument information to expression object
-            expression.arguments.push({
-              type: 'NumberLiteral',
-              value: argument.value
-            })
-            // push the expression object to body of our AST
-            AST.body.push(expression)
-          } else {
-            throw 'Paper command must be followed by a number.'
-          }
-          break
-
-        case 'Pen' :
-          var expression = {
-            type: 'CallExpression',
-            name: 'Pen',
-            arguments: []
-          }
-          // if current token is CallExpression of type Pen,
-          // next token should be color argument
-          var argument = tokens.shift()
-          if(argument.type === 'number') {
-            // add argument information to expression object
-            expression.arguments.push({
-              type: 'NumberLiteral',
-              value: argument.value
-            })
-            // push the expression object to body of our AST
-            AST.body.push(expression)
-          } else {
-            throw 'Pen command must be followed by a number.'
-          }
-          break
-
-        case 'Line':
-          var expression = {
-            type: 'CallExpression',
-            name: 'Line',
-            arguments: []
-          }
-          // if current token is CallExpression of type Line,
-          // next 4 tokens should be position arguments
-          for (var i = 0; i < 4; i++) {
-            var argument = tokens.shift()
-            if(argument.type === 'number') {
+      // Since number token does not do anything by it self,
+      // we only analyze syntax when we find a word.
+      if (current_token.type === "word") {
+        switch (current_token.value) {
+          case "Paper":
+            var expression = {
+              type: "CallExpression",
+              name: "Paper",
+              arguments: []
+            };
+            // if current token is CallExpression of type Paper,
+            // next token should be color argument
+            var argument = tokens.shift();
+            if (argument.type === "number") {
               // add argument information to expression object
               expression.arguments.push({
-                type: 'NumberLiteral',
+                type: "NumberLiteral",
                 value: argument.value
-              })
+              });
+              // push the expression object to body of our AST
+              AST.body.push(expression);
             } else {
-              throw 'Line command must be followed by 4 numbers.'
+              throw "Paper command must be followed by a number.";
             }
-          }
-          // push the expression object to body of our AST
-          AST.body.push(expression)
-          break
+            break;
+
+          case "Pen":
+            var expression = {
+              type: "CallExpression",
+              name: "Pen",
+              arguments: []
+            };
+            // if current token is CallExpression of type Pen,
+            // next token should be color argument
+            var argument = tokens.shift();
+            if (argument.type === "number") {
+              // add argument information to expression object
+              expression.arguments.push({
+                type: "NumberLiteral",
+                value: argument.value
+              });
+              // push the expression object to body of our AST
+              AST.body.push(expression);
+            } else {
+              throw "Pen command must be followed by a number.";
+            }
+            break;
+
+          case "Line":
+            var expression = {
+              type: "CallExpression",
+              name: "Line",
+              arguments: []
+            };
+            // if current token is CallExpression of type Line,
+            // next 4 tokens should be position arguments
+            for (var i = 0; i < 4; i++) {
+              var argument = tokens.shift();
+              if (argument.type === "number") {
+                // add argument information to expression object
+                expression.arguments.push({
+                  type: "NumberLiteral",
+                  value: argument.value
+                });
+              } else {
+                throw "Line command must be followed by 4 numbers.";
+              }
+            }
+            // push the expression object to body of our AST
+            AST.body.push(expression);
+            break;
+          case "Square":
+            var expression = {
+              type: "CallExpression",
+              name: "Square",
+              arguments: []
+            };
+            // if current token is CallExpression of type Line,
+            // next token should be the type of square
+            var argument = tokens.shift();
+            // push the expression object to body of our AST
+            AST.body.push(expression);
+            break;
+          case "Triangle":
+            var expression = {
+              type: "CallExpression",
+              name: "Triangle",
+              arguments: []
+            };
+            // if current token is CallExpression of type Line,
+            // next token should be the type Triangle
+            var argument = tokens.shift();
+            // push the expression object to body of our AST
+            AST.body.push(expression);
+            break;
+        }
       }
     }
+    return AST;
   }
-  return AST
-}
 
-/**
+  /**
   ## Transformer
   Parsed sbn AST is good at describing what's happening in the code,
   but it is not useful yet to create SVG file out of it.
@@ -218,66 +291,163 @@ function parser (tokens) {
   color code 100 means 100% black === rgb(0%, 0%, 0%)
 */
 
-function transformer (ast) {
+  function transformer(ast) {
+    var svg_ast = {
+      tag: "svg",
+      attr: {
+        width: 100,
+        height: 100,
+        viewBox: "0 0 100 100",
+        xmlns: "http://www.w3.org/2000/svg",
+        version: "1.1"
+      },
+      body: []
+    };
 
-  var svg_ast = {
-    tag : 'svg',
-    attr: {
-      width: 100,
-      height: 100,
-      viewBox: '0 0 100 100',
-      xmlns: 'http://www.w3.org/2000/svg',
-      version: '1.1'
-    },
-    body:[]
-  }
+    var pen_color = 100; // default pen color is black
 
-  var pen_color = 100 // default pen color is black
-
-  // Extract a call expression at a time as `node`.
-  // Loop until we are out of expressions in body.
-  while (ast.body.length > 0) {
-    var node = ast.body.shift()
-    switch (node.name) {
-      case 'Paper' :
-        var paper_color = 100 - node.arguments[0].value
-        // add rect element information to svg_ast's body
-        svg_ast.body.push({
-          tag : 'rect',
-          attr : {
-            x: 0,
-            y: 0,
-            width: 100,
-            height:100,
-            fill: 'rgb(' + paper_color + '%,' + paper_color + '%,' + paper_color + '%)'
-          }
-        })
-        break
-      case 'Pen':
-        // keep current pen color in `pen_color` variable
-        pen_color = 100 - node.arguments[0].value
-        break
-      case 'Line':
-        // add line element information to svg_ast's body
-        svg_ast.body.push({
-          tag: 'line',
-          attr: {
-            x1: node.arguments[0].value,
-            y1: node.arguments[1].value,
-            x2: node.arguments[2].value,
-            y2: node.arguments[3].value,
-            'stroke-linecap': 'round',
-            stroke: 'rgb(' + pen_color + '%,' + pen_color + '%,' + pen_color + '%)'
-          }
-        })
-        break
+    // Extract a call expression at a time as `node`.
+    // Loop until we are out of expressions in body.
+    while (ast.body.length > 0) {
+      var node = ast.body.shift();
+      switch (node.name) {
+        case "Paper":
+          var paper_color = 100 - node.arguments[0].value;
+          // add rect element information to svg_ast's body
+          svg_ast.body.push({
+            tag: "rect",
+            attr: {
+              x: 0,
+              y: 0,
+              width: 100,
+              height: 100,
+              fill:
+                "rgb(" +
+                paper_color +
+                "%," +
+                paper_color +
+                "%," +
+                paper_color +
+                "%)"
+            }
+          });
+          break;
+        case "Pen":
+          // keep current pen color in `pen_color` variable
+          pen_color = 100 - node.arguments[0].value;
+          break;
+        case "Line":
+          // add line element information to svg_ast's body
+          svg_ast.body.push({
+            tag: "line",
+            attr: {
+              x1: node.arguments[0].value,
+              y1: node.arguments[1].value,
+              x2: node.arguments[2].value,
+              y2: node.arguments[3].value,
+              "stroke-linecap": "round",
+              stroke:
+                "rgb(" + pen_color + "%," + pen_color + "%," + pen_color + "%)"
+            }
+          });
+          break;
+        case "Square":
+          // add line element information to svg_ast's body
+          svg_ast.body.push({
+            tag: "line",
+            attr: {
+              x1: "10",
+              y1: "10",
+              x2: "10",
+              y2: "90",
+              "stroke-linecap": "round",
+              stroke:
+                "rgb(" + pen_color + "%," + pen_color + "%," + pen_color + "%)"
+            }
+          });
+          svg_ast.body.push({
+            tag: "line",
+            attr: {
+              x1: "10",
+              y1: "90",
+              x2: "90",
+              y2: "90",
+              "stroke-linecap": "round",
+              stroke:
+                "rgb(" + pen_color + "%," + pen_color + "%," + pen_color + "%)"
+            }
+          });
+          svg_ast.body.push({
+            tag: "line",
+            attr: {
+              x1: "90",
+              y1: "90",
+              x2: "90",
+              y2: "10",
+              "stroke-linecap": "round",
+              stroke:
+                "rgb(" + pen_color + "%," + pen_color + "%," + pen_color + "%)"
+            }
+          });
+          svg_ast.body.push({
+            tag: "line",
+            attr: {
+              x1: "90",
+              y1: "10",
+              x2: "10",
+              y2: "10",
+              "stroke-linecap": "round",
+              stroke:
+                "rgb(" + pen_color + "%," + pen_color + "%," + pen_color + "%)"
+            }
+          });
+          break;
+        case "Triangle":
+          // add line element information to svg_ast's body
+          svg_ast.body.push({
+            tag: "line",
+            attr: {
+              x1: "50",
+              y1: "15",
+              x2: "85",
+              y2: "80",
+              "stroke-linecap": "round",
+              stroke:
+                "rgb(" + pen_color + "%," + pen_color + "%," + pen_color + "%)"
+            }
+          });
+          svg_ast.body.push({
+            tag: "line",
+            attr: {
+              x1: "85",
+              y1: "80",
+              x2: "15",
+              y2: "80",
+              "stroke-linecap": "round",
+              stroke:
+                "rgb(" + pen_color + "%," + pen_color + "%," + pen_color + "%)"
+            }
+          });
+          svg_ast.body.push({
+            tag: "line",
+            attr: {
+              x1: "15",
+              y1: "80",
+              x2: "50",
+              y2: "15",
+              "stroke-linecap": "round",
+              stroke:
+                "rgb(" + pen_color + "%," + pen_color + "%," + pen_color + "%)"
+            }
+          });
+          break;
+      }
     }
+
+    return svg_ast;
   }
 
-  return svg_ast
-}
-
-/**
+  /**
   ## Code Generator
   At the final stop of abn to avg compile process, generator function created
   SVG code based on given AST.
@@ -315,43 +485,55 @@ function transformer (ast) {
   ```
 */
 
-function generator (svg_ast) {
+  function generator(svg_ast) {
+    // console.log(svg_ast.body);
 
-  // create attributes string out of attr object
-  // { "width": 100, "height": 100 } becomes 'width="100" height="100"'
-  function createAttrString (attr) {
-    return Object.keys(attr).map(function (key){
-      return key + '="' + attr[key] + '"'
-    }).join(' ')
+    // create attributes string out of attr object
+    // { "width": 100, "height": 100 } becomes 'width="100" height="100"'
+    function createAttrString(attr) {
+      return Object.keys(attr)
+        .map(function(key) {
+          return key + '="' + attr[key] + '"';
+        })
+        .join(" ");
+    }
+
+    // top node is always <svg>. Create attributes string for svg tag
+    var svg_attr = createAttrString(svg_ast.attr);
+
+    // for each elements in the body of svg_ast, generate svg tag
+    var elements = svg_ast.body
+      .map(function(node) {
+        return (
+          "<" +
+          node.tag +
+          " " +
+          createAttrString(node.attr) +
+          "></" +
+          node.tag +
+          ">"
+        );
+      })
+      .join("\n\t");
+
+    // wrap with open and close svg tag to complete SVG code
+    return "<svg " + svg_attr + ">\n" + elements + "\n</svg>";
   }
 
-  // top node is always <svg>. Create attributes string for svg tag
-  var svg_attr = createAttrString(svg_ast.attr)
-
-  // for each elements in the body of svg_ast, generate svg tag
-  var elements = svg_ast.body.map(function (node) {
-    return '<' + node.tag + ' ' + createAttrString(node.attr) + '></' + node.tag + '>'
-  }).join('\n\t')
-
-  // wrap with open and close svg tag to complete SVG code
-  return '<svg '+ svg_attr +'>\n' + elements + '\n</svg>'
-}
-
-/**
+  /**
   ## Compiler
   Create sbn object with lexer, parser, transformer, and generator methods.
   Also add compile method to call all 4 methods in chain.
 */
-var sbn = {}
-sbn.VERSION = '0.0.1'
-sbn.lexer = lexer
-sbn.parser = parser
-sbn.transformer = transformer
-sbn.generator = generator
-sbn.compile = function (code) {
-  return this.generator(this.transformer(this.parser(this.lexer(code))))
-}
+  var sbn = {};
+  sbn.VERSION = "0.0.1";
+  sbn.lexer = lexer;
+  sbn.parser = parser;
+  sbn.transformer = transformer;
+  sbn.generator = generator;
+  sbn.compile = function(code) {
+    return this.generator(this.transformer(this.parser(this.lexer(code))));
+  };
 
-return sbn;
-
-})));
+  return sbn;
+});

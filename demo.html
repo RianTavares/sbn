@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>sbn - SVG by Numbers</title>
+  <title>DBN Compiler</title>
   <meta name="description" content=">a small language to draw picture in SVG. This is a demo of sbn compiler. Made by @kosamari">
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/codemirror.min.css">
   <link rel="stylesheet" type="text/css" href="./demo.css">
@@ -10,13 +10,6 @@
 </head>
 <body>
   <header id="header" class="">
-    <div>
-      <h1>sbn.</h1>
-      <p> SVG by Numbers</p>
-    </div>
-    <div>
-      <p>a small language to draw picture in SVG. This is a demo of sbn compiler. Made by <a href="https://twitter.com/kosamari" title="author twitter account">@kosamari</a>. Code on <a href="https://github.com/kosamari/sbn" title="github link">github</a>.</p>
-    </div>
   </header><!-- /header -->
   <div id="editor">
     <div id="svg-container" ></div>
@@ -64,7 +57,8 @@
     var $svgastMsg = document.getElementById('svgast-msg')
     var $svgtextMsg = document.getElementById('svgtext-msg')
     var $editor = CodeMirror(document.getElementById('code'), {
-      value: 'Paper 100\nPen 0\nLine 50 15 85 80\nLine 85 80 15 80\nLine 15 80 50 15',
+      // value: 'Paper 100\nPen 0\nLine 50 15 85 80\nLine 85 80 15 80\nLine 15 80 50 15',
+      value: 'Paper 100\nPen 0',
       lineNumbers: true
     })
     var $tokens = CodeMirror(document.getElementById('tokens'), {
